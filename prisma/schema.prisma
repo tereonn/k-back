@@ -9,3 +9,101 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id       Int          @id @default(autoincrement())
+  login    String
+  pass     String
+  UserInfo UserInfo[]
+  finals   Final[]
+  races    RaceMember[]
+  cars     Car[]
+
+}
+
+model UserInfo {
+  id     Int    @id @default(autoincrement())
+  name   String
+  city   String
+  phone  String
+  user   User   @relation(fields: [userId], references: [id])
+  userId Int    @unique
+}
+
+model Season {
+  id     Int     @id @default(autoincrement())
+  year   Int     @db.Year
+  stages Stage[]
+}
+
+model Stage {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  place     String
+  Season    Season?  @relation(fields: [seasonId], references: [id])
+  seasonId  Int?
+  races     Race[]
+  finalists Final[]
+}
+
+model CarClass {
+  id    Int    @id @default(autoincrement())
+  name  String
+  code  String
+  races Race[]
+}
+
+model Race {
+  id         Int          @id @default(autoincrement())
+  Stage      Stage?       @relation(fields: [stageId], references: [id])
+  stageId    Int?
+  CarClass   CarClass?    @relation(fields: [carClassId], references: [id])
+  carClassId Int?
+  results    RaceResult[]
+  members    RaceMember[]
+}
+
+model Final {
+  id    Int @id @default(autoincrement())
+  place Int @db.UnsignedTinyInt
+
+  User    User?  @relation(fields: [userId], references: [id])
+  userId  Int?
+  Stage   Stage? @relation(fields: [stageId], references: [id])
+  stageId Int?
+}
+
+model RaceResult {
+  id     Int    @id @default(autoincrement())
+  result Result
+  Race   Race?  @relation(fields: [raceId], references: [id])
+  raceId Int?
+}
+
+model RaceMember {
+  id Int @id @default(autoincrement())
+
+  User   User? @relation(fields: [userId], references: [id])
+  userId Int?
+  Race   Race? @relation(fields: [raceId], references: [id])
+  raceId Int?
+  Car    Car?  @relation(fields: [carId], references: [id])
+  carId  Int?
+}
+
+model Car {
+  id     Int          @id @default(autoincrement())
+  name   String
+  model  String
+  number String
+  color  String
+  races  RaceMember[]
+  User   User?        @relation(fields: [userId], references: [id])
+  userId Int?
+}
+
+enum Result {
+  WINNER
+  LOOSER
+  TIE_GAME
+}
