@@ -74,21 +74,24 @@ model Final {
 }
 
 model RaceResult {
-  id     Int    @id @default(autoincrement())
-  result Result
-  Race   Race?  @relation(fields: [raceId], references: [id])
-  raceId Int?
+  id         Int        @id @default(autoincrement())
+  result     Result
+  Race       Race?      @relation(fields: [raceId], references: [id])
+  raceId     Int?
+  RaceMember RaceMember @relation(fields: [memberId], references: [id])
+  memberId   Int        @unique
 }
 
 model RaceMember {
   id Int @id @default(autoincrement())
 
-  User   User? @relation(fields: [userId], references: [id])
+  User   User?       @relation(fields: [userId], references: [id])
   userId Int?
-  Race   Race? @relation(fields: [raceId], references: [id])
+  Race   Race?       @relation(fields: [raceId], references: [id])
   raceId Int?
-  Car    Car?  @relation(fields: [carId], references: [id])
+  Car    Car?        @relation(fields: [carId], references: [id])
   carId  Int?
+  result RaceResult?
 }
 
 model Car {
