@@ -13,6 +13,13 @@ export class UserService {
       data: {
         login: u.login,
         pass: u.passHash,
+        UserInfo: {
+          create: {
+            name: u.name,
+            city: u.city,
+            phone: u.phone,
+          },
+        },
       },
     });
   }
@@ -24,6 +31,14 @@ export class UserService {
       data: { ...updatedProps },
       where: {
         id: u.id,
+      },
+    });
+  }
+
+  findByLogin(login: string): Promise<PrismaUser> {
+    return this.prisma.user.findFirst({
+      where: {
+        login,
       },
     });
   }

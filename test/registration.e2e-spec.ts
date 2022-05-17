@@ -1,14 +1,19 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
-import * as errCodes from '../src/consts/error_codes';
+import * as errCodes from '../src/errors/error_codes';
 
 describe('e2e - Registration (POST /api/register)', () => {
   let app: INestApplication;
   const reqUserBody = {
-    login: 'test',
-    pass: '123',
+    user: {
+      login: 'test@ttt.tt',
+      pass: '1234567',
+      city: 'tcity',
+      phone: '12345',
+      name: 'tname',
+    },
   };
   const epPath = '/api/register';
 
@@ -18,6 +23,7 @@ describe('e2e - Registration (POST /api/register)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe());
     await app.init();
   });
 
@@ -38,22 +44,5 @@ describe('e2e - Registration (POST /api/register)', () => {
     expect(res.status).toEqual(409);
     expect(res.body.msg).toBe(errCodes.UserExists.text);
     expect(res.body.code).toBe(errCodes.UserExists.code);
-  });
-
-  it('Should return 400 if some data is missed', async () => {
-    const dataProps = Object.keys(reqUserBody);
-    for (const prop of dataProps) {
-      const testData = Object.assign({}, reqUserBody);
-
-      delete testData[prop];
-
-      const res = await request(app.getHttpServer())
-        .post(epPath)
-        .send(testData);
-
-      expect(res.status).toEqual(400);
-      expect(res.body.msg).toBe(errCodes.BadPostData.text);
-      expect(res.body.code).toBe(errCodes.BadPostData.code);
-    }
   });
 });

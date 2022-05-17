@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
-import * as errCodes from '../src/consts/error_codes';
+import * as errCodes from '../src/errors/error_codes';
 
 describe('e2e - Login (GET /api/login)', () => {
   let app: INestApplication;
