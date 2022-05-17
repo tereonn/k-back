@@ -1,15 +1,12 @@
-import { Body, Controller, HttpStatus, Post, UseFilters } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
 import { UserService } from '../../data-object/user/user.service';
 import { User } from '../../data-object/data/user';
-import { User as PrismaUser } from '@prisma/client';
 import { RegisterInput, RegisterOutput } from './dto';
 import { CustomException } from '../../errors/customException';
 import { UserExists } from '../../errors/error_codes';
-import { CustomExceptionFilter } from '../../errors/filter';
 import { JwtService } from '../jwt/jwt.service';
 
 @Controller('register')
-@UseFilters(new CustomExceptionFilter())
 export class RegisterController {
   constructor(
     private readonly userService: UserService,

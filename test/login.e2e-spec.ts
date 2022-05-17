@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import * as errCodes from '../src/errors/error_codes';
 
 describe('e2e - Login (GET /api/login)', () => {
   let app: INestApplication;
-  const endpointPath = 'api/login';
+  const endpointPath = '/api/login';
   const epSuccLoginQuery = {
-    login: 'test',
-    pass: 'test',
+    login: 'test@ttt.tt',
+    pass: '1234567',
   };
 
   beforeEach(async () => {
@@ -18,6 +18,7 @@ describe('e2e - Login (GET /api/login)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
+    app.useGlobalPipes(new ValidationPipe());
     await app.init();
   });
 
@@ -33,7 +34,7 @@ describe('e2e - Login (GET /api/login)', () => {
   it('Should return 401 if login is incorrect', async () => {
     const req = await request(app.getHttpServer())
       .get(endpointPath)
-      .query({ ...epSuccLoginQuery, login: 'bad' });
+      .query({ ...epSuccLoginQuery, login: 'bad' + epSuccLoginQuery.login });
 
     expect(req.status).toEqual(401);
     expect(req.body.msg).toBe(errCodes.BadLoginOrPass.text);
@@ -43,7 +44,7 @@ describe('e2e - Login (GET /api/login)', () => {
   it('Should return 401 and the error if password is incorrect', async () => {
     const req = await request(app.getHttpServer())
       .get(endpointPath)
-      .query({ ...epSuccLoginQuery, pass: 'bad' });
+      .query({ ...epSuccLoginQuery, pass: 'bad' + epSuccLoginQuery.pass });
 
     expect(req.status).toEqual(401);
     expect(req.body.msg).toBe(errCodes.BadLoginOrPass.text);
