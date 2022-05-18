@@ -20,5 +20,6 @@ import { CustomExceptionFilter } from '../errors/filter';
   ],
   controllers: [LoginController, RegisterController],
   imports: [DataObjectModule],
+  exports: [JwtService],
 })
 export class AuthModule {}
