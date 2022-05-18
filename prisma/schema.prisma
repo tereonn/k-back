@@ -18,7 +18,14 @@ model User {
   finals   Final[]
   races    RaceMember[]
   cars     Car[]
+  team     Team?        @relation(fields: [teamId], references: [id])
+  teamId   Int?
+}
 
+model Team {
+  id   Int    @id @default(autoincrement())
+  name String
+  User User[]
 }
 
 model UserInfo {
