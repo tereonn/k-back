@@ -3,14 +3,32 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import * as errCodes from '../src/errors/error_codes';
+import { PrismaClient } from '@prisma/client';
 
 describe('e2e - Login (GET /api/login)', () => {
   let app: INestApplication;
+  let prisma: PrismaClient;
   const endpointPath = '/api/login';
   const epSuccLoginQuery = {
     login: 'test@ttt.tt',
     pass: '1234567',
   };
+
+  beforeAll(async () => {
+    prisma = new PrismaClient();
+
+    await prisma.user.create({
+      data: epSuccLoginQuery,
+    });
+  });
+
+  afterAll(async () => {
+    const delUser = prisma.user.deleteMany();
+
+    await prisma.$transaction([delUser]);
+
+    await prisma.$disconnect();
+  });
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({

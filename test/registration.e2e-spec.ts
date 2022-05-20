@@ -3,6 +3,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import * as errCodes from '../src/errors/error_codes';
+import { PrismaClient } from '@prisma/client';
 
 describe('e2e - Registration (POST /api/register)', () => {
   let app: INestApplication;
@@ -16,6 +17,16 @@ describe('e2e - Registration (POST /api/register)', () => {
     },
   };
   const epPath = '/api/register';
+
+  afterAll(async () => {
+    const prisma = new PrismaClient();
+    const delUser = prisma.user.deleteMany();
+    const delUserInfo = prisma.userInfo.deleteMany();
+
+    prisma.$transaction([delUserInfo, delUser]);
+
+    prisma.$disconnect();
+  });
 
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
