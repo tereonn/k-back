@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { User } from '../data/user';
 import { PrismaService } from '../prisma.service';
-import { User as PrismaUser } from '@prisma/client';
+import { User as PrismaUser, Team } from '@prisma/client';
 import { userPropsToUpdInput } from '../helpers';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   save(u: User): Promise<PrismaUser> {
     return this.prisma.user.create({
@@ -39,6 +39,38 @@ export class UserService {
     return this.prisma.user.findFirst({
       where: {
         login,
+      },
+    });
+  }
+
+  async addTeam(uId: number, name: string): Promise<PrismaUser> {
+    let team = await this.prisma.team.findFirst({
+      where: {
+        name,
+      },
+    });
+
+    if (!team) {
+      team = await this.prisma.team.create({
+        data: {
+          name,
+        },
+      });
+    }
+
+    return this.prisma.user.update({
+      where: {
+        id: uId,
+      },
+      data: {
+        team: {
+          connect: {
+            id: team.id,
+          },
+        },
+      },
+      include: {
+        team: true,
       },
     });
   }

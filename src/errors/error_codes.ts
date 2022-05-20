@@ -17,3 +17,11 @@ export const BadJwt: ErrData = {
   text: 'Invalid token',
   code: 4,
 };
+export const TooManyUsersInTeam: ErrData = {
+  text: 'Team can contain max 3 users',
+  code: 5,
+};
+export const TeamNameAlreadyUsed: ErrData = {
+  text: 'Team name already used',
+  code: 6,
+};
