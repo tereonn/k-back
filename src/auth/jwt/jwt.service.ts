@@ -1,13 +1,16 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  GetPublicKeyOrSecret,
+  DecodeOptions,
   JwtPayload,
-  Secret,
   sign,
   SignOptions,
   verify,
   VerifyOptions,
+  decode,
 } from 'jsonwebtoken';
+import { TokenPayload } from '../types';
+import { AST } from 'eslint';
+import Token = AST.Token;
 
 // wrapper for the jsonwebtoken library
 @Injectable()
@@ -34,5 +37,11 @@ export class JwtService {
         (err, decoded) => (err ? reject(err) : resolve(decoded)),
       );
     });
+  }
+
+  decode(token: string): JwtPayload & { id: number } {
+    return decode(token, { json: true }) as unknown as JwtPayload & {
+      id: number;
+    };
   }
 }
