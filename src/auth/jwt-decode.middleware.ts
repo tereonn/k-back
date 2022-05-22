@@ -7,7 +7,12 @@ import { TokenPayload } from './types';
 export class JwtDecodeMiddleware implements NestMiddleware {
   constructor(private readonly jwtService: JwtService) {}
   use(req: Request & TokenPayload, res: Response, next: () => void) {
-    const jwt = req.header('Authorization').split(' ')[1];
+    const token = req.header('Authorization');
+
+    if (!token || token.split(' ').length === 1) {
+      return next();
+    }
+    const jwt = token.split(' ')[1];
 
     req.user = this.jwtService.decode(jwt);
     next();
