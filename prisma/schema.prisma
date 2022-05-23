@@ -11,21 +11,23 @@ datasource db {
 }
 
 model User {
-  id       Int          @id @default(autoincrement())
-  login    String
-  pass     String
-  UserInfo UserInfo?
-  finals   Final[]
-  races    RaceMember[]
-  cars     Car[]
-  team     Team?        @relation(fields: [teamId], references: [id])
-  teamId   Int?
+  id        Int          @id @default(autoincrement())
+  login     String
+  pass      String
+  UserInfo  UserInfo?
+  finals    Final[]
+  races     RaceMember[]
+  cars      Car[]
+  team      Team?        @relation(fields: [teamId], references: [id])
+  teamId    Int?
+  StageTeam StageTeam[]
 }
 
 model Team {
-  id   Int    @id @default(autoincrement())
-  name String @unique
-  User User[]
+  id        Int         @id @default(autoincrement())
+  name      String      @unique
+  User      User[]
+  StageTeam StageTeam[]
 }
 
 model UserInfo {
@@ -44,13 +46,14 @@ model Season {
 }
 
 model Stage {
-  id        Int      @id @default(autoincrement())
+  id        Int         @id @default(autoincrement())
   date      DateTime
   place     String
-  Season    Season?  @relation(fields: [seasonId], references: [id])
+  Season    Season?     @relation(fields: [seasonId], references: [id])
   seasonId  Int?
   races     Race[]
   finalists Final[]
+  StageTeam StageTeam[]
 }
 
 model CarClass {
@@ -110,6 +113,16 @@ model Car {
   races  RaceMember[]
   User   User?        @relation(fields: [userId], references: [id])
   userId Int?
+}
+
+model StageTeam {
+  id      Int   @id @default(autoincrement())
+  team    Team  @relation(fields: [teamId], references: [id])
+  teamId  Int
+  stage   Stage @relation(fields: [stageId], references: [id])
+  stageId Int
+  user    User? @relation(fields: [userId], references: [id])
+  userId  Int?
 }
 
 enum Result {
