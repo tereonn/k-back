@@ -5,6 +5,8 @@ import { AppModule } from '../src/app.module';
 import { PrismaClient } from '@prisma/client';
 import { TeamNameAlreadyUsed } from '../src/errors/error_codes';
 import { predefinedUsers } from './mock/users';
+import { User, Team } from '@prisma/client';
+
 describe('e2e - Team (/api/team)', () => {
   let app: INestApplication;
   let prisma: PrismaClient;
@@ -16,15 +18,16 @@ describe('e2e - Team (/api/team)', () => {
     ownerPass: '1234567',
   };
   let token: string = '';
+  let users: User[];
+  let team: Team;
 
   beforeAll(async () => {
     prisma = new PrismaClient();
 
-    // await prisma.user.createMany({ data: predefinedUsers });
-    const users = await prisma.$transaction(
+    users = await prisma.$transaction(
       predefinedUsers.map((u) => prisma.user.create({ data: u })),
     );
-    await prisma.team.create({
+    team = await prisma.team.create({
       data: {
         name: predefinedTeam.name,
         User: {
@@ -110,19 +113,93 @@ describe('e2e - Team (/api/team)', () => {
   });
 
   describe('PUT team modifying', () => {
-    it('Should add user into the team if team members number is less than 3', async () => {
+    it('Should change team name if user is owner', async () => {
       const res = await request(app.getHttpServer())
         .put(epPath)
         .set(`Authorization`, `Bearer ${token}`)
         .send({
-          userIds: [
-            {
-              login: predefinedUsers[2].login,
-            },
-          ],
+          name: 'newName',
         });
 
       expect(res.status).toEqual(HttpStatus.OK);
+    });
+
+    it('Should return 403 status if user tries to change not owned team', async () => {
+      token = (
+        await request(app.getHttpServer()).get('/api/login').query({
+          login: users[1].login,
+          pass: users[1].pass,
+        })
+      ).body.token;
+
+      const res = await request(app.getHttpServer())
+        .put(epPath)
+        .set(`Authorization`, `Bearer ${token}`)
+        .query({ name: 'newName2' });
+
+      expect(res.status).toEqual(HttpStatus.FORBIDDEN);
+    });
+
+    describe('(/join) add user to the team', () => {
+      it('Should add user to the team', async () => {
+        token = (
+          await request(app.getHttpServer()).get('/api/login').query({
+            login: users[1].login,
+            pass: users[1].pass,
+          })
+        ).body.token;
+
+        const res = await request(app.getHttpServer())
+          .put(epPath + '/join')
+          .set(`Authorization`, `Bearer ${token}`)
+          .query({ name: team.name });
+
+        expect(res.status).toEqual(HttpStatus.OK);
+      });
+
+      it('Should return 400 status if a user trying to join already joined team', async () => {
+        token = (
+          await request(app.getHttpServer()).get('/api/login').query({
+            login: users[1].login,
+            pass: users[1].pass,
+          })
+        ).body.token;
+
+        const res = await request(app.getHttpServer())
+          .put(epPath + '/join')
+          .set(`Authorization`, `Bearer ${token}`)
+          .query({ name: team.name });
+
+        expect(res.status).toEqual(HttpStatus.BAD_REQUEST);
+      });
+    });
+
+    describe('(/remove) remove user from the team', () => {
+      const path = epPath + '/remove';
+      it('Should remove user from the team if all correct', async () => {
+        const res = await request(app.getHttpServer())
+          .put(path)
+          .set(`Authorization`, `Bearer ${token}`)
+          .query({ userId: users[1].id, teamName: team.name });
+
+        expect(res.status).toEqual(HttpStatus.OK);
+      });
+
+      it('Should return 403 if user trying remove user from team that user doesnt own', async () => {
+        token = (
+          await request(app.getHttpServer()).get('/api/login').query({
+            login: users[1].login,
+            pass: users[1].pass,
+          })
+        ).body.token;
+
+        const res = await request(app.getHttpServer())
+          .put(path)
+          .set(`Authorization`, `Bearer ${token}`)
+          .query({ userId: users[2].id, teamName: team.name });
+
+        expect(res.status).toEqual(HttpStatus.FORBIDDEN);
+      });
     });
   });
 });
