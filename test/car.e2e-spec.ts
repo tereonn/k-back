@@ -38,15 +38,15 @@ describe('e2e - Car (/api/car)', () => {
     },
   ];
   let user: User;
+  let userWithoutCars: User;
   let cars: Car[];
 
   beforeAll(async () => {
     prisma = new PrismaClient();
-    user = await prisma.user.create({
-      data: {
-        ...mockedUser,
-      },
-    });
+    [user, userWithoutCars] = await prisma.$transaction([
+      prisma.user.create({ data: mockedUser }),
+      prisma.user.create({ data: predefinedUsers[0] }),
+    ]);
 
     cars = await prisma.$transaction(
       mockCars.slice(1).map((c) =>
@@ -102,6 +102,68 @@ describe('e2e - Car (/api/car)', () => {
       expect(res.status).toEqual(HttpStatus.OK);
       expect(res.body).toHaveProperty('cars');
       expect(res.body.cars).toHaveLength(3);
+    });
+
+    it('(/list) - Should return all cars with user data', async () => {
+      const requiredProps = ['name', 'model', 'color', 'id', 'number', 'User'];
+      const res = await request(app.getHttpServer())
+        .get(epPath + '/list')
+        .set(`Authorization`, `Bearer ${token}`);
+
+      expect(res.status).toEqual(HttpStatus.OK);
+      expect(res.body).toHaveProperty(cars);
+      for (const c of res.body.cars) {
+        for (const p of requiredProps) {
+          expect(c).toHaveProperty(p);
+        }
+      }
+    });
+  });
+
+  describe('PUT - change car data', () => {
+    it('should change user data', async () => {
+      const name = 'changedName';
+      const number = 'changed 123 num';
+      const res = await request(app.getHttpServer())
+        .put(epPath)
+        .set(`Authorization`, `Bearer ${token}`)
+        .send({
+          id: cars[0].id,
+          data: { name, number },
+        });
+
+      expect(res.status).toBe(HttpStatus.OK);
+      expect(res.body).toMatchObject({
+        ...cars[0],
+        name,
+        number,
+      });
+    });
+  });
+
+  describe('DELETE - delete car', () => {
+    it('Should remove car', async () => {
+      const res = await request(app.getHttpServer())
+        .delete(epPath)
+        .set(`Authorization`, `Bearer ${token}`)
+        .query({ id: cars[0].id });
+
+      expect(res.status).toEqual(HttpStatus.OK);
+    });
+
+    it('Should return an error if user is not the car owner', async () => {
+      token = (
+        await request(app.getHttpServer())
+          .get('/api/login')
+          .query({ login: userWithoutCars.login, pass: userWithoutCars.pass })
+      ).body.token;
+
+      const res = await request(app.getHttpServer())
+        .delete(epPath)
+        .set(`Authorization`, `Bearer ${token}`)
+        .query({ id: cars[0].id });
+
+      expect(res.status).toEqual(HttpStatus.FORBIDDEN);
     });
   });
 });
