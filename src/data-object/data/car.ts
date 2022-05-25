@@ -8,7 +8,7 @@ export type CarData = {
   ownerId: number;
 };
 
-export class Car {
+export class CarDao {
   private id: number;
   name: string;
   model: string;
@@ -18,7 +18,7 @@ export class Car {
 
   private constructor() {}
   static fromData(data: CarData) {
-    const c = new Car();
+    const c = new CarDao();
     c.name = data.name;
     c.model = data.model;
     c.number = data.number;

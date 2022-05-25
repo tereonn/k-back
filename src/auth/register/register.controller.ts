@@ -1,6 +1,6 @@
 import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
 import { UserService } from '../../data-object/user/user.service';
-import { User } from '../../data-object/data/user';
+import { UserDao } from '../../data-object/data/user';
 import { RegisterInput, RegisterOutput } from './dto';
 import { CustomException } from '../../errors/customException';
 import { UserExists } from '../../errors/error_codes';
@@ -25,7 +25,7 @@ export class RegisterController {
       );
     }
 
-    const newUser = User.fromLoginPass(u.login, u.pass)
+    const newUser = UserDao.fromLoginPass(u.login, u.pass)
       .addName(u.name)
       .addCity(u.city)
       .addPhone(u.phone);

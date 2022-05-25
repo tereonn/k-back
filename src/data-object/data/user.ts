@@ -5,17 +5,17 @@ export interface UpdateUserProps {
   pass?: string;
 }
 
-export class User {
+export class UserDao {
   private constructor(l: string, p: string, id: number) {
     this.login = l;
     this._passHash = p;
     this.id = id;
   }
-  static fromLoginPass(l: string, p: string): User {
-    return new User(l, p, null);
+  static fromLoginPass(l: string, p: string): UserDao {
+    return new UserDao(l, p, null);
   }
-  static fromIdLoginPass(i: number, l: string, p: string): User {
-    return new User(l, p, i);
+  static fromIdLoginPass(i: number, l: string, p: string): UserDao {
+    return new UserDao(l, p, i);
   }
 
   public readonly id: number | null = null;
@@ -70,17 +70,17 @@ export class User {
   getUpdatedProps(): UpdateUserProps {
     return this.updateObj;
   }
-  addCity(val: string): User {
+  addCity(val: string): UserDao {
     this._city = val;
 
     return this;
   }
-  addName(val: string): User {
+  addName(val: string): UserDao {
     this._name = val;
 
     return this;
   }
-  addPhone(val: string): User {
+  addPhone(val: string): UserDao {
     this._phone = val;
 
     return this;

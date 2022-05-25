@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { User } from '../data/user';
+import { UserDao } from '../data/user';
 import { PrismaService } from '../prisma.service';
 import { User as PrismaUser, Team } from '@prisma/client';
 import { userPropsToUpdInput } from '../helpers';
@@ -8,7 +8,7 @@ import { userPropsToUpdInput } from '../helpers';
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
-  save(u: User): Promise<PrismaUser> {
+  save(u: UserDao): Promise<PrismaUser> {
     return this.prisma.user.create({
       data: {
         login: u.login,
@@ -24,7 +24,7 @@ export class UserService {
     });
   }
 
-  updateUserBio(u: User): Promise<PrismaUser> {
+  updateUserBio(u: UserDao): Promise<PrismaUser> {
     const updatedProps = userPropsToUpdInput(u.getUpdatedProps());
 
     return this.prisma.user.update({

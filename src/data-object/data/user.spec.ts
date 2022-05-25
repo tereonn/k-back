@@ -1,8 +1,8 @@
-import { User, UpdateUserProps } from './user';
+import { UserDao, UpdateUserProps } from './user';
 import { userInfo } from 'os';
 
 describe('UserService', () => {
-  let user: User;
+  let user: UserDao;
   const baseUser = {
     login: 't_login',
     passHash: 't_pass',
@@ -13,7 +13,7 @@ describe('UserService', () => {
   };
 
   beforeEach(() => {
-    user = User.fromLoginPass(baseUser.login, baseUser.passHash);
+    user = UserDao.fromLoginPass(baseUser.login, baseUser.passHash);
   });
 
   it('User with defined login and pass should be created', () => {
@@ -29,7 +29,7 @@ describe('UserService', () => {
   });
 
   describe('Properties add - should change the value but updated props obj should be empty', () => {
-    const checkingMap = new Map<keyof User, string>();
+    const checkingMap = new Map<keyof UserDao, string>();
     checkingMap.set('name', 'addName');
     checkingMap.set('phone', 'addPhone');
     checkingMap.set('city', 'addCity');
@@ -48,7 +48,7 @@ describe('UserService', () => {
   });
 
   describe('Properties change - should change the value and save it in the updated props', () => {
-    type UserProps = keyof User;
+    type UserProps = keyof UserDao;
     type TestingProps = Extract<
       UserProps,
       'name' | 'city' | 'phone' | 'passHash'
