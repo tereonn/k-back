@@ -11,24 +11,33 @@ datasource db {
 }
 
 model User {
-  id        Int          @id @default(autoincrement())
-  login     String
-  pass      String
-  UserInfo  UserInfo?
-  finals    Final[]
-  races     RaceMember[]
-  cars      Car[]
-  team      Team?        @relation(fields: [teamId], references: [id])
-  teamId    Int?
-  StageTeam StageTeam[]
+  id         Int          @id @default(autoincrement())
+  login      String
+  pass       String
+  UserInfo   UserInfo?
+  finals     Final[]
+  races      RaceMember[]
+  cars       Car[]
+  team       Team[]
+  StageTeam  StageTeam[]
+  TeamOnUser TeamOnUser[]
 }
 
 model Team {
-  id        Int         @id @default(autoincrement())
-  name      String      @unique
-  members   User[]
-  StageTeam StageTeam[]
-  owner     Boolean     @default(false)
+  id         Int          @id @default(autoincrement())
+  name       String       @unique
+  members    User[]
+  StageTeam  StageTeam[]
+  TeamOnUser TeamOnUser[]
+}
+
+model TeamOnUser {
+  id     Int     @id @default(autoincrement())
+  member User    @relation(fields: [userId], references: [id])
+  team   Team    @relation(fields: [teamId], references: [id])
+  owner  Boolean @default(false)
+  userId Int
+  teamId Int
 }
 
 model UserInfo {
