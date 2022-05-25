@@ -32,12 +32,13 @@ model Team {
 }
 
 model TeamOnUser {
-  id     Int     @id @default(autoincrement())
   member User    @relation(fields: [userId], references: [id])
   team   Team    @relation(fields: [teamId], references: [id])
   owner  Boolean @default(false)
   userId Int
   teamId Int
+
+  @@id([userId, teamId])
 }
 
 model UserInfo {
