@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `Team` ADD COLUMN `owner` BOOLEAN NOT NULL DEFAULT false;
