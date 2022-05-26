@@ -16,10 +16,16 @@ import {
   TeamInfoOutput,
   PostTeamInput,
   PutTeamInput,
+  PutJoinTeamInput,
 } from './dto';
 import { RaceService } from '../../data-object/race/race.service';
 import { CustomException } from '../../errors/customException';
-import { TeamNameAlreadyUsed } from '../../errors/error_codes';
+import {
+  CantAddUser,
+  NotPermitted,
+  TeamNameAlreadyUsed,
+  UpdObjectNotFound,
+} from '../../errors/error_codes';
 
 @Controller('team')
 @UseGuards(AuthGuard)
@@ -60,8 +66,66 @@ export class TeamController {
   }
 
   @Put()
-  async addUserToTeam(
+  async changeTeamData(
     @Req() req: TokenPayload,
     @Body() body: PutTeamInput,
-  ): Promise<void> {}
+  ): Promise<TeamInfoOutput> {
+    const team = await this.raceService.getTeamByName(body.oldName);
+    if (!team) {
+      throw new CustomException(
+        HttpStatus.BAD_REQUEST,
+        UpdObjectNotFound.code,
+        UpdObjectNotFound.text,
+      );
+    }
+
+    if (team.owner.id !== req.user.id) {
+      throw new CustomException(
+        HttpStatus.FORBIDDEN,
+        NotPermitted.code,
+        NotPermitted.text,
+      );
+    }
+
+    team.name = body.newName;
+
+    return {
+      success: true,
+      data: (await this.raceService.updateTeam(team)).makeTeamInfoOutput(),
+    };
+  }
+
+  @Put('/join')
+  async addUserToTeam(
+    @Req() req: TokenPayload,
+    @Query() q: PutJoinTeamInput,
+  ): Promise<TeamInfoOutput> {
+    const team = await this.raceService.getTeamByName(q.name);
+
+    if (!team) {
+      throw new CustomException(
+        HttpStatus.BAD_REQUEST,
+        UpdObjectNotFound.code,
+        UpdObjectNotFound.text,
+      );
+    }
+
+    if (
+      team.owner.id === req.user.id ||
+      team.members.some((m) => m.id === req.user.id)
+    ) {
+      throw new CustomException(
+        HttpStatus.BAD_REQUEST,
+        CantAddUser.code,
+        CantAddUser.text,
+      );
+    }
+
+    return {
+      success: true,
+      data: (
+        await this.raceService.addTeamMember(req.user.id, team)
+      ).makeTeamInfoOutput(),
+    };
+  }
 }

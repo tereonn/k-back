@@ -3,7 +3,7 @@ import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { PrismaClient } from '@prisma/client';
-import { TeamNameAlreadyUsed } from '../src/errors/error_codes';
+import { NotPermitted, TeamNameAlreadyUsed } from '../src/errors/error_codes';
 import { predefinedUsers } from './mock/users';
 import { User, Team } from '@prisma/client';
 
@@ -71,7 +71,7 @@ describe('e2e - Team (/api/team)', () => {
     app = moduleFixture.createNestApplication();
     app.useGlobalPipes(new ValidationPipe());
     await app.init();
-    const mockedUser = predefinedUsers[0];
+    const mockedUser = users[0];
     token = (
       await request(app.getHttpServer())
         .get('/api/login')
@@ -121,21 +121,29 @@ describe('e2e - Team (/api/team)', () => {
       expect(res.status).toEqual(HttpStatus.OK);
       expect(res.body).toHaveProperty('success');
       expect(res.body).toHaveProperty('data');
-      expect(res.body.succress).toBeTruthy();
+      expect(res.body.success).toBeTruthy();
       expect(res.body.data).not.toBeNull();
     });
   });
 
   describe('PUT team modifying', () => {
+    const oldName = 'testTeam';
+    const newName = oldName + '2';
     it('Should change team name if user is owner', async () => {
       const res = await request(app.getHttpServer())
         .put(epPath)
         .set(`Authorization`, `Bearer ${token}`)
         .send({
-          name: 'newName',
+          newName,
+          oldName,
         });
 
       expect(res.status).toEqual(HttpStatus.OK);
+      expect(res.body).toHaveProperty('success');
+      expect(res.body).toHaveProperty('data');
+      expect(res.body.success).toBeTruthy();
+      expect(res.body.data).toHaveProperty('name');
+      expect(res.body.data.name).toEqual(newName);
     });
 
     it('Should return 403 status if user tries to change not owned team', async () => {
@@ -149,17 +157,19 @@ describe('e2e - Team (/api/team)', () => {
       const res = await request(app.getHttpServer())
         .put(epPath)
         .set(`Authorization`, `Bearer ${token}`)
-        .query({ name: 'newName2' });
+        .send({ newName: 'newName2', oldName: newName });
 
       expect(res.status).toEqual(HttpStatus.FORBIDDEN);
+      expect(res.body.msg).toBe(NotPermitted.text);
+      expect(res.body.code).toBe(NotPermitted.code);
     });
 
     describe('(/join) add user to the team', () => {
       it('Should add user to the team', async () => {
         token = (
           await request(app.getHttpServer()).get('/api/login').query({
-            login: users[1].login,
-            pass: users[1].pass,
+            login: users[3].login,
+            pass: users[3].pass,
           })
         ).body.token;
 
@@ -174,8 +184,8 @@ describe('e2e - Team (/api/team)', () => {
       it('Should return 400 status if a user trying to join already joined team', async () => {
         token = (
           await request(app.getHttpServer()).get('/api/login').query({
-            login: users[1].login,
-            pass: users[1].pass,
+            login: users[3].login,
+            pass: users[3].pass,
           })
         ).body.token;
 

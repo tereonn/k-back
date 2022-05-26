@@ -25,3 +25,15 @@ export const TeamNameAlreadyUsed: ErrData = {
   text: 'Team name already used',
   code: 6,
 };
+export const UpdObjectNotFound: ErrData = {
+  text: 'The object you can try to update not found',
+  code: 7,
+};
+export const NotPermitted: ErrData = {
+  text: 'You do not have permission to do this',
+  code: 8,
+};
+export const CantAddUser: ErrData = {
+  text: 'User already in',
+  code: 9,
+};

@@ -33,5 +33,15 @@ export class TeamData {
 export class PutTeamInput {
   @IsString()
   @MinLength(1)
+  oldName: string;
+
+  @IsString()
+  @MinLength(1)
+  newName: string;
+}
+
+export class PutJoinTeamInput {
+  @IsString()
+  @MinLength(1)
   name: string;
 }
