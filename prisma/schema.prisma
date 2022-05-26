@@ -18,7 +18,6 @@ model User {
   finals     Final[]
   races      RaceMember[]
   cars       Car[]
-  team       Team[]
   StageTeam  StageTeam[]
   TeamOnUser TeamOnUser[]
 }
@@ -26,7 +25,6 @@ model User {
 model Team {
   id         Int          @id @default(autoincrement())
   name       String       @unique
-  members    User[]
   StageTeam  StageTeam[]
   TeamOnUser TeamOnUser[]
 }
