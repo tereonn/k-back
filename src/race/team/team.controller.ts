@@ -4,15 +4,20 @@ import {
   Get,
   HttpStatus,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '../../auth/auth.guard';
 import { TokenPayload } from '../../auth/types';
-import { GetTeamInput, PostTeamInput } from './dto';
+import {
+  GetTeamInput,
+  TeamInfoOutput,
+  PostTeamInput,
+  PutTeamInput,
+} from './dto';
 import { RaceService } from '../../data-object/race/race.service';
-import { Team, User } from '@prisma/client';
 import { CustomException } from '../../errors/customException';
 import { TeamNameAlreadyUsed } from '../../errors/error_codes';
 
@@ -25,7 +30,7 @@ export class TeamController {
   async addTeam(
     @Req() req: TokenPayload,
     @Body('team') team: PostTeamInput,
-  ): Promise<Team & { User: User[] }> {
+  ): Promise<TeamInfoOutput> {
     const existingTeam = await this.raceService.getTeamByName(team.name);
     if (existingTeam) {
       throw new CustomException(
@@ -35,11 +40,28 @@ export class TeamController {
       );
     }
 
-    return this.raceService.createTeam(team.name, req.user.id);
+    const t = await this.raceService.createTeam(team.name, req.user.id);
+
+    return {
+      success: true,
+      data: t.makeTeamInfoOutput(),
+    };
   }
 
   @Get()
-  async getTeamByName(@Query() { name }: GetTeamInput) {
-    return this.raceService.getTeamByName(name);
+  async getTeamByName(
+    @Query() { name }: GetTeamInput,
+  ): Promise<TeamInfoOutput> {
+    const team = await this.raceService.getTeamByName(name);
+    if (!team) {
+      return { success: false, data: null };
+    }
+    return { success: true, data: team.makeTeamInfoOutput() };
   }
+
+  @Put()
+  async addUserToTeam(
+    @Req() req: TokenPayload,
+    @Body() body: PutTeamInput,
+  ): Promise<void> {}
 }

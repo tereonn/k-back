@@ -23,29 +23,43 @@ describe('e2e - Team (/api/team)', () => {
 
   beforeAll(async () => {
     prisma = new PrismaClient();
-
     users = await prisma.$transaction(
       predefinedUsers.map((u) => prisma.user.create({ data: u })),
     );
     team = await prisma.team.create({
       data: {
         name: predefinedTeam.name,
-        User: {
-          create: {
-            login: predefinedTeam.ownerLogin,
-            pass: predefinedTeam.ownerPass,
-          },
-          connect: users.slice(1, 3).map((u) => ({ id: u.id })),
+        TeamOnUser: {
+          create: [
+            {
+              member: {
+                create: {
+                  login: predefinedTeam.ownerLogin,
+                  pass: predefinedTeam.ownerPass,
+                },
+              },
+              owner: true,
+            },
+            ...users.slice(1, 3).map((u) => ({
+              owner: false,
+              member: {
+                connect: {
+                  id: u.id,
+                },
+              },
+            })),
+          ],
         },
       },
     });
   });
 
   afterAll(async () => {
+    const delUsTmRel = prisma.teamOnUser.deleteMany();
     const delUsers = prisma.user.deleteMany();
     const delTeams = prisma.team.deleteMany();
 
-    await prisma.$transaction([delUsers, delTeams]);
+    await prisma.$transaction([delUsTmRel, delUsers, delTeams]);
     await prisma.$disconnect();
   });
 
@@ -77,9 +91,8 @@ describe('e2e - Team (/api/team)', () => {
         });
 
       expect(res.status).toEqual(201);
-      expect(res.body.name).toBe('testteam');
-      expect(res.body.User).toHaveLength(1);
-      expect(res.body.User[0].login).toBe(predefinedUsers[0].login);
+      expect(res.body).toHaveProperty('success');
+      expect(res.body.success).toBeTruthy();
     });
 
     it('Should return 409 status and error if team name is duplicating', async () => {
@@ -106,9 +119,10 @@ describe('e2e - Team (/api/team)', () => {
         .query({ name: predefinedTeam.name });
 
       expect(res.status).toEqual(HttpStatus.OK);
-      expect(res.body).toHaveProperty('name');
-      expect(res.body).toHaveProperty('User');
-      expect(res.body.User).toHaveLength(3);
+      expect(res.body).toHaveProperty('success');
+      expect(res.body).toHaveProperty('data');
+      expect(res.body.succress).toBeTruthy();
+      expect(res.body.data).not.toBeNull();
     });
   });
 

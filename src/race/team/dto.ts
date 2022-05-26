@@ -12,3 +12,26 @@ export class GetTeamInput {
   @IsAlpha()
   name: string;
 }
+
+export class TeamInfoOutput {
+  success: boolean;
+  data: TeamData | null;
+}
+
+export class TeamData {
+  name: string;
+  owner: {
+    name: string;
+    id: number;
+  };
+  members: {
+    name: string;
+    id: number;
+  }[];
+}
+
+export class PutTeamInput {
+  @IsString()
+  @MinLength(1)
+  name: string;
+}
