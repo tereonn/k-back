@@ -76,4 +76,13 @@ export class RaceService {
 
     return TeamDao.fromPrismaResp(res);
   }
+
+  async removeTeamMember(uId: number, t: TeamDao): Promise<TeamDao> {
+    const res = await this.prisma.team.update({
+      ...t.makeRemoveUserQuery(uId),
+      ...this.teamDataIncludeQuery,
+    });
+
+    return TeamDao.fromPrismaResp(res);
+  }
 }

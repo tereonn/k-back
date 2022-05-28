@@ -1,4 +1,11 @@
-import { IsAlpha, IsString, MinLength } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsAlpha,
+  IsInt,
+  IsPositive,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class PostTeamInput {
   @IsString()
@@ -44,4 +51,15 @@ export class PutJoinTeamInput {
   @IsString()
   @MinLength(1)
   name: string;
+}
+
+export class PutRemoveTeamInput {
+  @IsString()
+  @MinLength(1)
+  teamName: string;
+
+  @Type(() => Number)
+  @IsInt()
+  @IsPositive()
+  userId: number;
 }

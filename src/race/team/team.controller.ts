@@ -17,6 +17,7 @@ import {
   PostTeamInput,
   PutTeamInput,
   PutJoinTeamInput,
+  PutRemoveTeamInput,
 } from './dto';
 import { RaceService } from '../../data-object/race/race.service';
 import { CustomException } from '../../errors/customException';
@@ -25,6 +26,7 @@ import {
   NotPermitted,
   TeamNameAlreadyUsed,
   UpdObjectNotFound,
+  UserNotInTeam,
 } from '../../errors/error_codes';
 
 @Controller('team')
@@ -125,6 +127,43 @@ export class TeamController {
       success: true,
       data: (
         await this.raceService.addTeamMember(req.user.id, team)
+      ).makeTeamInfoOutput(),
+    };
+  }
+
+  @Put('/remove')
+  async removeUserFromTeam(
+    @Req() req: TokenPayload,
+    @Query() q: PutRemoveTeamInput,
+  ): Promise<TeamInfoOutput> {
+    const team = await this.raceService.getTeamByName(q.teamName);
+    if (!team) {
+      throw new CustomException(
+        HttpStatus.BAD_REQUEST,
+        UpdObjectNotFound.code,
+        UpdObjectNotFound.text,
+      );
+    }
+
+    if (team.owner.id !== req.user.id) {
+      throw new CustomException(
+        HttpStatus.FORBIDDEN,
+        NotPermitted.code,
+        NotPermitted.text,
+      );
+    }
+    if (!team.members.find((m) => m.id === q.userId)) {
+      throw new CustomException(
+        HttpStatus.BAD_REQUEST,
+        UserNotInTeam.code,
+        UserNotInTeam.text,
+      );
+    }
+
+    return {
+      success: true,
+      data: (
+        await this.raceService.removeTeamMember(q.userId, team)
       ).makeTeamInfoOutput(),
     };
   }

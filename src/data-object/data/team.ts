@@ -105,4 +105,20 @@ export class TeamDao {
       data: updData,
     };
   }
+
+  makeRemoveUserQuery(id: number): Prisma.TeamUpdateArgs {
+    return {
+      where: {
+        id: this._id,
+      },
+      data: {
+        TeamOnUser: {
+          deleteMany: {
+            userId: id,
+            teamId: this._id,
+          },
+        },
+      },
+    };
+  }
 }

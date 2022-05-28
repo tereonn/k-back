@@ -37,3 +37,7 @@ export const CantAddUser: ErrData = {
   text: 'User already in',
   code: 9,
 };
+export const UserNotInTeam: ErrData = {
+  text: 'User not in the team',
+  code: 10,
+};
