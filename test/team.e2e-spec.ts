@@ -69,7 +69,7 @@ describe('e2e - Team (/api/team)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe());
+    app.useGlobalPipes(new ValidationPipe({ transform: true }));
     await app.init();
     const mockedUser = users[0];
     token = (
@@ -201,12 +201,28 @@ describe('e2e - Team (/api/team)', () => {
     describe('(/remove) remove user from the team', () => {
       const path = epPath + '/remove';
       it('Should remove user from the team if all correct', async () => {
+        token = (
+          await request(app.getHttpServer()).get('/api/login').query({
+            login: predefinedTeam.ownerLogin,
+            pass: predefinedTeam.ownerPass,
+          })
+        ).body.token;
+
+        const removingUserId = users[3].id;
         const res = await request(app.getHttpServer())
           .put(path)
           .set(`Authorization`, `Bearer ${token}`)
-          .query({ userId: users[1].id, teamName: team.name });
+          .query({ userId: removingUserId, teamName: team.name });
 
         expect(res.status).toEqual(HttpStatus.OK);
+        expect(res.body).toHaveProperty('data');
+        expect(res.body.data).toHaveProperty('members');
+        expect(Array.isArray(res.body.data.members)).toBeTruthy();
+
+        for (const member of res.body.data.members) {
+          expect(member).toHaveProperty('id');
+          expect(member.id).not.toBe(removingUserId);
+        }
       });
 
       it('Should return 403 if user trying remove user from team that user doesnt own', async () => {
