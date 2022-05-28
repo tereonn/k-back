@@ -2,7 +2,7 @@ import { HttpStatus, INestApplication, ValidationPipe } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaClient, User, Car } from '@prisma/client';
 import { AppModule } from '../src/app.module';
-import { predefinedUsers } from './mock/users';
+import { predefinedUsers, mockCars } from './mock';
 import request from 'supertest';
 
 describe('e2e - Car (/api/car)', () => {
@@ -11,32 +11,6 @@ describe('e2e - Car (/api/car)', () => {
   const epPath = '/api/car';
   let token = '';
   const mockedUser = predefinedUsers[0];
-  const mockCars = [
-    {
-      name: 'testCar',
-      model: 'testModel',
-      number: '1dd232 1566f',
-      color: 'testColor',
-    },
-    {
-      name: 'testCar2',
-      model: 'testModel',
-      number: '1dd232 1566f',
-      color: 'testColor',
-    },
-    {
-      name: 'testCar3',
-      model: 'testModel',
-      number: '1dd232 1566f',
-      color: 'testColor',
-    },
-    {
-      name: 'testCar4',
-      model: 'testModel',
-      number: '1dd232 1566f',
-      color: 'testColor',
-    },
-  ];
   let user: User;
   let userWithoutCars: User;
   let cars: Car[];
