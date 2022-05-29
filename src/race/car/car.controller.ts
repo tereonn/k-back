@@ -5,15 +5,17 @@ import {
   HttpStatus,
   Post,
   Put,
+  Query,
   Req,
   UseGuards,
+  Delete,
 } from '@nestjs/common';
 import { CustomException } from '../../errors/customException';
 import { NotPermitted, UpdObjectNotFound } from '../../errors/error_codes';
 import { AuthGuard } from '../../auth/auth.guard';
 import { TokenPayload } from '../../auth/types';
 import { CarService } from '../../data-object/car/car.service';
-import { PostCarInput, PutCarInput } from './dto';
+import { DeleteCarQuery, PostCarInput, PutCarInput } from './dto';
 
 @Controller('car')
 @UseGuards(AuthGuard)
@@ -59,5 +61,22 @@ export class CarController {
     Object.keys(body.data).forEach((p) => (car[p] = body.data[p]));
 
     return this.carService.changeCarData(car);
+  }
+
+  @Delete()
+  async deleteUserCar(@Req() req: TokenPayload, @Query() q: DeleteCarQuery) {
+    const car = await this.carService.getCarById(q.id);
+
+    if (car.ownerId !== req.user.id) {
+      throw new CustomException(
+        HttpStatus.FORBIDDEN,
+        NotPermitted.code,
+        NotPermitted.text,
+      );
+    }
+
+    await this.carService.deleteUserCar(car);
+
+    return true;
   }
 }

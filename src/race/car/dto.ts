@@ -29,3 +29,8 @@ export class PutCarInput {
 
   data: PartialCarInput;
 }
+
+export class DeleteCarQuery {
+  @IsPositive()
+  id: number;
+}

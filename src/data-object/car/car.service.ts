@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CarDao, CarData } from '../data/car';
 import { PrismaService } from '../prisma.service';
-import { Car, User, Prisma } from '@prisma/client';
+import { Car } from '@prisma/client';
 import { UserDao } from '../data/user';
 
 @Injectable()
@@ -27,5 +27,9 @@ export class CarService {
 
   async changeCarData(c: CarDao) {
     return this.prisma.car.update(c.makeUpdateQuery());
+  }
+
+  async deleteUserCar(c: CarDao) {
+    return this.prisma.car.delete(c.makeDeleteQuery());
   }
 }
