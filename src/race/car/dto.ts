@@ -1,4 +1,5 @@
 import { PartialType } from '@nestjs/mapped-types';
+import { Type } from 'class-transformer';
 import { IsAlpha, IsNotEmpty, IsPositive, IsString } from 'class-validator';
 
 export class PostCarInput {
@@ -31,6 +32,7 @@ export class PutCarInput {
 }
 
 export class DeleteCarQuery {
+  @Type(() => Number)
   @IsPositive()
   id: number;
 }

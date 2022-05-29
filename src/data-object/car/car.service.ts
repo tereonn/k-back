@@ -19,8 +19,11 @@ export class CarService {
     return this.prisma.user.findUnique(UserDao.makeGetUserCarsQuery(uid));
   }
 
-  async getCarById(id: number): Promise<CarDao> {
+  async getCarById(id: number): Promise<CarDao | null> {
     const car = await this.prisma.car.findUnique(CarDao.makeGetByUdQuery(id));
+    if (!car) {
+      return null;
+    }
 
     return CarDao.fromPrismaCar(car);
   }

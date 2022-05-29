@@ -66,6 +66,13 @@ export class CarController {
   @Delete()
   async deleteUserCar(@Req() req: TokenPayload, @Query() q: DeleteCarQuery) {
     const car = await this.carService.getCarById(q.id);
+    if (!car) {
+      throw new CustomException(
+        HttpStatus.BAD_REQUEST,
+        UpdObjectNotFound.code,
+        UpdObjectNotFound.text,
+      );
+    }
 
     if (car.ownerId !== req.user.id) {
       throw new CustomException(

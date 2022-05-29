@@ -20,7 +20,7 @@ describe('e2e - Car (/api/car)', () => {
     prisma = new PrismaClient();
     [user, userWithoutCars] = await prisma.$transaction([
       prisma.user.create({ data: mockedUser }),
-      prisma.user.create({ data: predefinedUsers[0] }),
+      prisma.user.create({ data: predefinedUsers[1] }),
     ]);
 
     cars = await prisma.$transaction(
@@ -45,7 +45,7 @@ describe('e2e - Car (/api/car)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    app.useGlobalPipes(new ValidationPipe());
+    app.useGlobalPipes(new ValidationPipe({ transform: true }));
     await app.init();
 
     token = (
@@ -137,7 +137,7 @@ describe('e2e - Car (/api/car)', () => {
       const res = await request(app.getHttpServer())
         .delete(epPath)
         .set(`Authorization`, `Bearer ${token}`)
-        .query({ id: cars[0].id });
+        .query({ id: cars[1].id });
 
       expect(res.status).toEqual(HttpStatus.FORBIDDEN);
     });
