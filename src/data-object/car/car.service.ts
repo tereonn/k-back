@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { CarDao, CarData } from '../data/car';
 import { PrismaService } from '../prisma.service';
-import { Car, User, Prisma } from '@prisma/client';
+import { Car } from '@prisma/client';
 import { UserDao } from '../data/user';
 
 @Injectable()
@@ -19,13 +19,20 @@ export class CarService {
     return this.prisma.user.findUnique(UserDao.makeGetUserCarsQuery(uid));
   }
 
-  async getCarById(id: number): Promise<CarDao> {
+  async getCarById(id: number): Promise<CarDao | null> {
     const car = await this.prisma.car.findUnique(CarDao.makeGetByUdQuery(id));
+    if (!car) {
+      return null;
+    }
 
     return CarDao.fromPrismaCar(car);
   }
 
   async changeCarData(c: CarDao) {
     return this.prisma.car.update(c.makeUpdateQuery());
+  }
+
+  async deleteUserCar(c: CarDao) {
+    return this.prisma.car.delete(c.makeDeleteQuery());
   }
 }

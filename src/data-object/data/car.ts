@@ -127,4 +127,11 @@ export class CarDao {
       data: up,
     };
   }
+  makeDeleteQuery(): Prisma.CarDeleteArgs {
+    return {
+      where: {
+        id: this._id,
+      },
+    };
+  }
 }
