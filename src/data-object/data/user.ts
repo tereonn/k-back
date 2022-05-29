@@ -1,3 +1,5 @@
+import { Prisma } from '@prisma/client';
+
 export interface UpdateUserProps {
   name?: string;
   city?: string;
@@ -20,14 +22,12 @@ export class UserDao {
 
   public readonly id: number | null = null;
   public readonly login: string;
-  private _passHash: string;
 
+  private _passHash: string;
   private _name: string | null = null;
   private _city: string | null = null;
   private _phone: string | null = null;
-
   private _teamName: string | null = null;
-
   private updateObj: UpdateUserProps = {};
 
   public get passHash() {
@@ -84,5 +84,26 @@ export class UserDao {
     this._phone = val;
 
     return this;
+  }
+
+  static makeGetUserCarsQuery(id: number) {
+    return {
+      where: {
+        id,
+      },
+      select: {
+        id: true,
+        UserInfo: true,
+        cars: {
+          select: {
+            id: true,
+            name: true,
+            model: true,
+            number: true,
+            color: true,
+          },
+        },
+      },
+    };
   }
 }
