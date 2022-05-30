@@ -4,6 +4,8 @@ import { PrismaClient, User, Car } from '@prisma/client';
 import { AppModule } from '../src/app.module';
 import { predefinedUsers, mockCars } from './mock';
 import request from 'supertest';
+import { createUsers } from './helpers';
+import { UserRoles } from '../src/auth/types';
 
 describe('e2e - Car (/api/car)', () => {
   let app: INestApplication;
@@ -18,10 +20,13 @@ describe('e2e - Car (/api/car)', () => {
 
   beforeAll(async () => {
     prisma = new PrismaClient();
-    [user, userWithoutCars] = await prisma.$transaction([
-      prisma.user.create({ data: mockedUser }),
-      prisma.user.create({ data: predefinedUsers[1] }),
-    ]);
+    [user, userWithoutCars] = await createUsers(
+      [
+        { ...mockedUser, roles: [UserRoles.User] },
+        { ...predefinedUsers[1], roles: [UserRoles.User] },
+      ],
+      prisma,
+    );
 
     cars = await prisma.$transaction(
       mockCars.slice(1).map((c) =>

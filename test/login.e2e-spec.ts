@@ -4,6 +4,8 @@ import request from 'supertest';
 import { AppModule } from '../src/app.module';
 import * as errCodes from '../src/errors/error_codes';
 import { PrismaClient } from '@prisma/client';
+import { createUsers } from './helpers';
+import { UserRoles } from '../src/auth/types';
 
 describe('e2e - Login (GET /api/login)', () => {
   let app: INestApplication;
@@ -17,15 +19,27 @@ describe('e2e - Login (GET /api/login)', () => {
   beforeAll(async () => {
     prisma = new PrismaClient();
 
-    await prisma.user.create({
-      data: epSuccLoginQuery,
-    });
+    await createUsers(
+      [{ ...epSuccLoginQuery, roles: [UserRoles.User] }],
+      prisma,
+    );
   });
 
   afterAll(async () => {
+    const disconnectUsers = prisma.role.update({
+      where: {
+        code: UserRoles.User,
+      },
+      data: {
+        users: {
+          set: [],
+        },
+      },
+    });
+
     const delUser = prisma.user.deleteMany();
 
-    await prisma.$transaction([delUser]);
+    await prisma.$transaction([disconnectUsers, delUser]);
 
     await prisma.$disconnect();
   });

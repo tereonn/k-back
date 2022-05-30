@@ -6,6 +6,8 @@ import { PrismaClient } from '@prisma/client';
 import { NotPermitted, TeamNameAlreadyUsed } from '../src/errors/error_codes';
 import { predefinedUsers } from './mock/users';
 import { User, Team } from '@prisma/client';
+import { createUsers } from './helpers';
+import { UserRoles } from '../src/auth/types';
 
 describe('e2e - Team (/api/team)', () => {
   let app: INestApplication;
@@ -23,8 +25,19 @@ describe('e2e - Team (/api/team)', () => {
 
   beforeAll(async () => {
     prisma = new PrismaClient();
-    users = await prisma.$transaction(
-      predefinedUsers.map((u) => prisma.user.create({ data: u })),
+    users = await createUsers(
+      predefinedUsers.map((u) => ({ ...u, roles: [UserRoles.User] })),
+      prisma,
+    );
+    const teamOwner = await createUsers(
+      [
+        {
+          login: predefinedTeam.ownerLogin,
+          pass: predefinedTeam.ownerPass,
+          roles: [UserRoles.User],
+        },
+      ],
+      prisma,
     );
     team = await prisma.team.create({
       data: {
@@ -33,9 +46,8 @@ describe('e2e - Team (/api/team)', () => {
           create: [
             {
               member: {
-                create: {
-                  login: predefinedTeam.ownerLogin,
-                  pass: predefinedTeam.ownerPass,
+                connect: {
+                  id: teamOwner[0].id,
                 },
               },
               owner: true,
