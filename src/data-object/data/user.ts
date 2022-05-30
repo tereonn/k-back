@@ -1,5 +1,3 @@
-import { Prisma } from '@prisma/client';
-
 export interface UpdateUserProps {
   name?: string;
   city?: string;
@@ -27,8 +25,8 @@ export class UserDao {
   private _name: string | null = null;
   private _city: string | null = null;
   private _phone: string | null = null;
-  private _teamName: string | null = null;
   private updateObj: UpdateUserProps = {};
+  private _roles: string[] = [];
 
   public get passHash() {
     return this._passHash;
@@ -65,6 +63,10 @@ export class UserDao {
 
     this._phone = phone;
   }
+  public get roles() {
+    return this._roles;
+  }
+  public set roles(_: string[]) {}
 
   // Methods
   getUpdatedProps(): UpdateUserProps {
@@ -82,6 +84,11 @@ export class UserDao {
   }
   addPhone(val: string): UserDao {
     this._phone = val;
+
+    return this;
+  }
+  addRoles(val: string[]): UserDao {
+    this._roles.push(...val);
 
     return this;
   }

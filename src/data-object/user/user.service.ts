@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { UserDao } from '../data/user';
 import { PrismaService } from '../prisma.service';
-import { User as PrismaUser } from '@prisma/client';
+import { User, Role } from '@prisma/client';
 import { userPropsToUpdInput } from '../helpers';
 
 @Injectable()
 export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
-  save(u: UserDao): Promise<PrismaUser> {
+  save(u: UserDao): Promise<User & { roles: Role[] }> {
     return this.prisma.user.create({
       data: {
         login: u.login,
@@ -20,11 +20,17 @@ export class UserService {
             phone: u.phone,
           },
         },
+        roles: {
+          connect: [...u.roles.map((u) => ({ code: u }))],
+        },
+      },
+      include: {
+        roles: true,
       },
     });
   }
 
-  updateUserBio(u: UserDao): Promise<PrismaUser> {
+  updateUserBio(u: UserDao): Promise<User> {
     const updatedProps = userPropsToUpdInput(u.getUpdatedProps());
 
     return this.prisma.user.update({
@@ -35,10 +41,13 @@ export class UserService {
     });
   }
 
-  findByLogin(login: string): Promise<PrismaUser> {
+  findByLogin(login: string): Promise<User & { roles: Role[] }> {
     return this.prisma.user.findFirst({
       where: {
         login,
+      },
+      include: {
+        roles: true,
       },
     });
   }

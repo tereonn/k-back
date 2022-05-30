@@ -5,6 +5,7 @@ import { RegisterInput, RegisterOutput } from './dto';
 import { CustomException } from '../../errors/customException';
 import { UserExists } from '../../errors/error_codes';
 import { JwtService } from '../jwt/jwt.service';
+import { UserRoles } from '../types';
 
 @Controller('register')
 export class RegisterController {
@@ -28,12 +29,14 @@ export class RegisterController {
     const newUser = UserDao.fromLoginPass(u.login, u.pass)
       .addName(u.name)
       .addCity(u.city)
-      .addPhone(u.phone);
+      .addPhone(u.phone)
+      .addRoles([UserRoles.User]);
 
     const saved = await this.userService.save(newUser);
     const token = await this.jwtServicw.sign(
       {
         id: saved.id,
+        roles: saved.roles.map((r) => r.code),
       },
       {
         //Todo should get exp time from config module or env variable

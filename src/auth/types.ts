@@ -3,3 +3,8 @@ export type TokenPayload = {
     id: number;
   };
 };
+
+export enum UserRoles {
+  Admin = 'admin',
+  User = 'user',
+}

@@ -28,6 +28,7 @@ export class LoginController {
     const token = await this.jwtService.sign(
       {
         id: user.id,
+        roles: user.roles.map((r) => r.code),
       },
       {
         //Todo as register
