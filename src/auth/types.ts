@@ -1,6 +1,7 @@
 export type TokenPayload = {
   user: {
     id: number;
+    roles: UserRoles[];
   };
 };
 
