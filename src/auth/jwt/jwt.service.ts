@@ -1,6 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
 import {
-  DecodeOptions,
   JwtPayload,
   sign,
   SignOptions,
@@ -39,9 +38,8 @@ export class JwtService {
     });
   }
 
-  decode(token: string): JwtPayload & { id: number } {
-    return decode(token, { json: true }) as unknown as JwtPayload & {
-      id: number;
-    };
+  decode(token: string): JwtPayload & TokenPayload['user'] {
+    return decode(token, { json: true }) as unknown as JwtPayload &
+      TokenPayload['user'];
   }
 }

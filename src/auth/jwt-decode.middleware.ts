@@ -6,7 +6,7 @@ import { TokenPayload } from './types';
 @Injectable()
 export class JwtDecodeMiddleware implements NestMiddleware {
   constructor(private readonly jwtService: JwtService) {}
-  use(req: Request & TokenPayload, res: Response, next: () => void) {
+  use(req: Request & TokenPayload, _: Response, next: () => void) {
     const token = req.header('Authorization');
 
     if (!token || token.split(' ').length === 1) {

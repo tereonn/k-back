@@ -5,11 +5,11 @@ import { AppModule } from '../src/app.module';
 import { PrismaClient, User } from '@prisma/client';
 import { predefinedUsers } from './mock';
 import { createUsers } from './helpers';
-import { UserRoles } from 'src/auth/types';
+import { UserRoles } from '../src/auth/types';
 
 const baseApiUrl = '/api/season';
 const testSeason = {
-  year: 2000,
+  year: 2008,
 };
 
 describe(`e2e - Season (${baseApiUrl})`, () => {
@@ -59,9 +59,12 @@ describe(`e2e - Season (${baseApiUrl})`, () => {
   describe('POST - create season', () => {
     it('Should create a new season', async () => {
       const year = testSeason.year + 10;
-      const res = await request(app.getHttpServer()).post(baseApiUrl).send({
-        year,
-      });
+      const res = await request(app.getHttpServer())
+        .post(baseApiUrl)
+        .set(`Authorization`, `Bearer ${token}`)
+        .send({
+          year,
+        });
 
       expect(res.status).toBe(HttpStatus.CREATED);
       expect(res.body).toHaveProperty('year');
@@ -78,9 +81,12 @@ describe(`e2e - Season (${baseApiUrl})`, () => {
       ).body.token;
 
       const year = testSeason.year + 10;
-      const res = await request(app.getHttpServer()).post(baseApiUrl).send({
-        year,
-      });
+      const res = await request(app.getHttpServer())
+        .post(baseApiUrl)
+        .send({
+          year,
+        })
+        .set(`Authorization`, `Bearer ${token}`);
 
       expect(res.status).toBe(HttpStatus.FORBIDDEN);
     });
