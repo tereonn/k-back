@@ -18,6 +18,9 @@ export class SeasonService {
           year: 'desc',
         },
       ],
+      include: {
+        stages: true,
+      },
     });
   }
 

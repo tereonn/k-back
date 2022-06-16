@@ -1,4 +1,6 @@
+import { INestApplication } from '@nestjs/common';
 import { PrismaClient, User } from '@prisma/client';
+import request from 'supertest';
 
 type UserData = {
   login: string;
@@ -23,4 +25,14 @@ export function createUsers(
       }),
     ),
   );
+}
+
+export async function getUserAuthToken(
+  login: string,
+  pass: string,
+  app: INestApplication,
+): Promise<string> {
+  return (
+    await request(app.getHttpServer()).get('/api/login').query({ login, pass })
+  ).body.token;
 }

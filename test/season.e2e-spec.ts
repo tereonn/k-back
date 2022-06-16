@@ -102,6 +102,10 @@ describe(`e2e - Season (${baseApiUrl})`, () => {
 
   describe('PUT - change season data', () => {
     it('Should change data if the user is the admin', async () => {
+      const 
+      const res = await request(app.getHttpServer()).put(baseApiUrl).send({
+
+      })
       return false;
     });
 
